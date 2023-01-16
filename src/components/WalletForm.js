@@ -1,26 +1,58 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { fetchApi } from '../redux/actions';
+import { currencyApi, currencyRate, expenseAction } from '../redux/actions';
 
 class WalletForm extends Component {
   state = {
+    id: 0,
     description: '',
-    currency: '',
-    value: 0,
-    method: '',
-    tag: '',
+    currency: 'USD',
+    value: '',
+    method: 'Dinheiro',
+    tag: 'Alimentação',
   };
 
   componentDidMount() {
     const { dispatch } = this.props;
-    dispatch(fetchApi());
+    dispatch(currencyApi());
   }
 
   handleChange = ({ target }) => {
     const { name, value } = target;
     this.setState({
       [name]: value,
+    });
+  };
+
+  handleClick = async () => {
+    const { dispatch } = this.props;
+    const {
+      id,
+      value,
+      description,
+      currency,
+      method,
+      tag,
+    } = this.state;
+    const exchangeRates = await dispatch(currencyRate());
+    const expenses = {
+      id,
+      value,
+      description,
+      currency,
+      method,
+      tag,
+      exchangeRates,
+    };
+    dispatch(expenseAction(expenses));
+    this.setState({
+      id: (id + 1),
+      value: '',
+      description: '',
+      currency: 'USD',
+      method: 'Dinheiro',
+      tag: 'Alimentação',
     });
   };
 
@@ -41,18 +73,6 @@ class WalletForm extends Component {
           />
         </label>
 
-        <label htmlFor="description">
-          Descrição
-          <input
-            type="text"
-            name="description"
-            id="description"
-            value={ description }
-            onChange={ this.handleChange }
-            data-testid="description-input"
-          />
-        </label>
-
         <label htmlFor="currency">
           Moeda
           <select
@@ -62,8 +82,12 @@ class WalletForm extends Component {
             value={ currency }
             onChange={ this.handleChange }
           >
-            {currencies?.map((param) => (
-              <option key={ param } value={ param }>{ param }</option>
+            { currencies.map((chaves) => (
+              <option
+                key={ chaves }
+              >
+                { chaves }
+              </option>
             ))}
           </select>
         </label>
@@ -100,13 +124,31 @@ class WalletForm extends Component {
           </select>
         </label>
 
+        <label htmlFor="description">
+          Descrição
+          <input
+            type="text"
+            name="description"
+            id="description"
+            value={ description }
+            onChange={ this.handleChange }
+            data-testid="description-input"
+          />
+        </label>
+
+        <button
+          type="button"
+          onClick={ this.handleClick }
+        >
+          Adicionar despesa
+        </button>
       </form>
     );
   }
 }
 
 const mapStateToProps = (state) => ({
-  currencies: state.wallet.currencies,
+  ...state.wallet,
 });
 
 WalletForm.propTypes = {
