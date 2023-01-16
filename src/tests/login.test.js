@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithRouterAndRedux } from './helpers/renderWith';
 import App from '../App';
 
-describe('Testa o component Login', () => {
+describe('Testa o componente Login', () => {
   test('Renderiza os elementos email, senha e entrar', () => {
     const { history } = renderWithRouterAndRedux(<App />);
     const inputEmail = screen.getByText(/email/i);
@@ -28,6 +28,14 @@ describe('Testa o component Login', () => {
     const inputSenha = screen.getByTestId('password-input');
 
     expect(inputSenha).toBeInTheDocument();
+  });
+
+  test('Testa se botão esta ativado com login correto', () => {
+    renderWithRouterAndRedux(<App />);
+    const button = screen.getByRole('button');
+    userEvent.type(email, 'felipe@email.com');
+    userEvent.type(password, '12345678');
+    expect(button).not.toBeDisabled();
   });
 
   test('Verificando se os campos funcionam.', () => {
